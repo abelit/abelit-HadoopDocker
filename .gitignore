@@ -1,5 +1,5 @@
 /hdfs
 /packages
-.DS_Store
+*/.DS_Store
 /containerconf/hosts
 /containerconf/known_hosts
