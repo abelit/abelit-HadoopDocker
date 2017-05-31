@@ -1,3 +1,4 @@
 /hdfs
 /packages
 .DS_Store
+/containerconf
