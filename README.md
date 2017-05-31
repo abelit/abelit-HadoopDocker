@@ -12,7 +12,7 @@
 ## Start hadoop
 > start-all.sh
 
-
+## Create dirs based hdfs
 > hadoop dfs -mkdir /input
 
 > hadoop dfs -put README.txt /input
