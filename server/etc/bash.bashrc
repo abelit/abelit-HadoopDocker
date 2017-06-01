@@ -69,13 +69,13 @@ fi
 
 
 # Java Environment
-export JAVA_HOME=/root/hadoop/jdk1.8.0_112
+export JAVA_HOME=/root/bigdata/jdk
 export JRE_HOME=${JAVA_HOME}/jre
 export CLASSPARH=$CLASSPATH:${JAVA_HOME}/lib:${JRE_HOME}/lib
 export PATH=$PATH:${JAVA_HOME}/bin:${JRE_HOME}/bin
 
 # Hadoop Environment
-export HADOOP_HOME=/root/hadoop/hadoop-2.7.3
+export HADOOP_HOME=/root/bigdata/hadoop
 export HADOOP_MAPRED_HOME=${HADOOP_HOME}
 export HADOOP_COMMON_HOME=${HADOOP_HOME}
 export HADOOP_HDFS_HOME=${HADOOP_HOME}

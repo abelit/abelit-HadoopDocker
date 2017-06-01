@@ -19,68 +19,67 @@ export PATH
 osname=`uname -s`
 
 # Define hadoop and spark's path
-current_path=`pwd`
+local_path=`pwd`
 
 # Define docker image name or tag
-hadoop_image="ubuntu:hadoop"
+hadoop_image="ubuntu:test"
 
 # Define datanode or slaves node numbers
-node_num=5
+node_num=3
 
 # Parameter of this script
 param=$1
 
-# Define file known_hosts and its path
-containerconf_path="$current_path/containerconf"
-containerconf_known_hosts="$containerconf_path/known_hosts"
-containerconf_hosts="$containerconf_path/hosts"
-containerconf_bashrc="$containerconf_path/bash.bashrc"
-
 # Define hadoop and its conf's path on local
-hadoop_home="$current_path"
-hadoop_hdfs_path="$hadoop_home/hdfs"
-hadoopconf_path="$hadoop_home/hadoopconf"
-hadoopconf_slaves="$hadoopconf_path/slaves"
-hadoopconf_coresite="$hadoopconf_path/core-site.xml"
-hadoopconf_hdfssite="$hadoopconf_path/hdfs-site.xml"
-hadoopconf_mapredsite="$hadoopconf_path/mapred-site.xml"
-hadoopconf_yarnsite="$hadoopconf_path/yarn-site.xml"
-hadoopconf_hadoopenv="$hadoopconf_path/hadoop-env.sh"
-hadoopconf_mapredenv="$hadoopconf_path/mapred-env.sh"
-hadoopconf_yarnenv="$hadoopconf_path/yarn-env.sh"
-
-# Define hadoop and its conf's path on the container
-container_hadoop_home="/root/hadoop/hadoop-2.7.3"
-container_hadoop_hdfs_path=$container_hadoop_home/hdfs
-container_hadoopconf_path=$container_hadoop_home/etc/hadoop
+hadoop_path="$local_path/hadoop"
+hadoop_hdfs_path="$hadoop_path/data/hdfs"
+hadoop_conf_path="$hadoop_path/etc/hadoop"
+hadoop_conf_slaves="$hadoop_conf_path/slaves"
+hadoop_conf_coresite="$hadoop_conf_path/core-site.xml"
+hadoop_conf_hdfssite="$hadoop_conf_path/hdfs-site.xml"
+hadoop_conf_mapredsite="$hadoop_conf_path/mapred-site.xml"
+hadoop_conf_yarnsite="$hadoop_conf_path/yarn-site.xml"
+hadoop_conf_hadoopenv="$hadoop_conf_path/hadoop-env.sh"
+hadoop_conf_mapredenv="$hadoop_conf_path/mapred-env.sh"
+hadoop_conf_yarnenv="$hadoop_conf_path/yarn-env.sh"
 
 # Define spark and its conf's path
-spark_home="$current_path"
-sparkconf_path="$spark_home/sparkconf"
-sparkconf_env="$sparkconf_path/spark-env.sh"
-sparkconf_slaves="$sparkconf_path/slaves"
+spark_path="$local_path/spark"
+spark_conf_path="$spark_path/conf"
+spark_conf_env="$spark_conf_path/spark-env.sh"
+spark_conf_slaves="$spark_conf_path/slaves"
+
+# Define file known_hosts and its path
+server_path="$local_path/server"
+server_conf_path="$server_path/etc"
+server_conf_hosts="$server_conf_path/hosts"
+server_conf_bashrc="$server_conf_path/bash.bashrc"
+
+# Define file known_hosts and its path
+container_server_conf_hosts="/etc/hosts"
+container_server_conf_bashrc="/etc/bash.bashrc"
+
+# Define hadoop and its conf's path on the container
+container_hadoop_path="/root/bigdata/hadoop"
+container_hadoop_hdfs_path=$container_hadoop_path/hdfs
+container_hadoop_conf_path=$container_hadoop_path/etc/hadoop
 
 # Define spark and its conf's path on the container
-container_spark_home="/root/hadoop/spark-2.0.2-bin-hadoop2.7"
-container_sparkconf_path=$container_spark_home/conf
+container_spark_path="/root/bigdata/spark"
+container_spark_conf_path=$container_spark_path/conf
 # Define variable --------------End----------------------
+
 
 # Configure soft path environment
 function addPath() {
 		# Check container's path
-		if [ -d "$containerconf_path" ];then
-			# Make sure there exits known_hosts
-			if [ ! -e "$containerconf_known_hosts" ];then
-				touch $containerconf_known_hosts
-			fi
-			if [ ! -e "$containerconf_hosts" ];then
-				touch $containerconf_hosts
+		if [ -d "$server_conf_path" ];then
+			if [ ! -e "$server_conf_hosts" ];then
+				touch $server_conf_hosts
 			fi
 		else
-			mkdir  -p $containerconf_path
-			if [ ! -e "$containerconf_hosts" ];then
-				touch $containerconf_hosts
-			fi
+			mkdir  -p $server_conf_path
+			touch $server_conf_hosts
 		fi
 }
 
@@ -130,7 +129,7 @@ function startDocker() {
 function startMaster() {
 	master_container='master'
 	#Start a master hadoop container
-	docker run -t -d --name master -h master -v $containerconf_bashrc:/etc/bash.bashrc -v $containerconf_known_hosts:/root/.ssh/known_hosts -v $containerconf_hosts:/etc/hosts -v $hadoopconf_path:$container_hadoopconf_path -v $hadoop_hdfs_path/$master_container:$container_hadoop_hdfs_path $hadoop_image
+	docker run -t -d --name master -h master -v $server_conf_bashrc:$container_server_conf_bashrc -v $server_conf_hosts:$container_server_conf_hosts -v $hadoop_conf_path:$container_hadoop_conf_path -v $hadoop_hdfs_path/$master_container:$container_hadoop_hdfs_path $hadoop_image
 	master_ip=$(docker inspect --format='{{.NetworkSettings.IPAddress}}' $master_container)
 
 	echo ""
@@ -140,7 +139,7 @@ function startMaster() {
 	echo "The IPAddress: ${master_ip}"
 	echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 	echo ""
-	echo "$master_ip    $master_container" >> $containerconf_hosts
+	echo "$master_ip    $master_container" >> $server_conf_hosts
 }
 
 function startSlave() {
@@ -153,22 +152,22 @@ function startSlave() {
 	fi
 
 	# Clearing hadoop slaves
-	sed -ie '/^slave.*/d' $hadoopconf_slaves
-	sed -ie '/^$/d' $hadoopconf_slaves
+	sed -ie '/^slave.*/d' $hadoop_conf_slaves
+	sed -ie '/^$/d' $hadoop_conf_slaves
 	# Clearing spark slaves
-	sed -ie '/^slave.*/d' $sparkconf_slaves
-	sed -ie '/^$/d' $sparkconf_slaves
+	sed -ie '/^slave.*/d' $spark_conf_slaves
+	sed -ie '/^$/d' $spark_conf_slaves
 
 	while [ $number -gt 0 ]
 	do
 		slave_container="slave${number}"
 		# Configuring hadoop slaves configuration
-		echo $slave_container >> $hadoopconf_slaves
+		echo $slave_container >> $hadoop_conf_slaves
 
 		# Configuring hadoop slaves configuration
-		echo $slave_container >> $sparkconf_slaves
+		echo $slave_container >> $spark_conf_slaves
 
-		docker run -t -d --name slave${number} -h slave${number} -v $containerconf_bashrc:/etc/bash.bashrc -v $containerconf_known_hosts:/root/.ssh/known_hosts -v $containerconf_hosts:/etc/hosts -v $hadoopconf_path:$container_hadoopconf_path -v $hadoop_hdfs_path/slave${number}:$container_hadoop_hdfs_path $hadoop_image
+		docker run -t -d --name slave${number} -h slave${number} -v $server_conf_bashrc:$container_server_conf_bashrc -v $server_conf_hosts:$container_server_conf_hosts -v $hadoop_conf_path:$container_hadoop_conf_path -v $hadoop_hdfs_path/slave${number}:$container_hadoop_hdfs_path $hadoop_image
 		slave_ip=$(docker inspect --format='{{.NetworkSettings.IPAddress}}' $slave_container)
 
 		echo ""
@@ -178,7 +177,7 @@ function startSlave() {
 		echo "The IPAddress: ${slave_ip}"
 		echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 		echo ""
-		echo "$slave_ip    $slave_container" >> $containerconf_hosts
+		echo "$slave_ip    $slave_container" >> $server_conf_hosts
 		number=$[ $number-1 ]
 	done
 }
@@ -207,11 +206,7 @@ function enterContainer(){
 function resetDocker() {
 	# Clear known_hosts contents
 	echo "Clear hosts contents ..."
-	cat /dev/null > $containerconf_hosts
-
-	# Clear known_hosts contents
-	echo "Clear known_hosts contents ..."
-	cat /dev/null > $containerconf_known_hosts
+	cat /dev/null > $server_conf_hosts
 
 	container_lists="`docker ps | grep -E "slave|master|secondarynamenode" | awk '{print $NF}'`"
 	for container_name in $container_lists
@@ -266,7 +261,7 @@ function checkContainer() {
 # 		container_ip=$(docker inspect --format='{{.NetworkSettings.IPAddress}}' $container)
 # 		known_hosts="$container,$container_ip"
 # 		known_hosts=$known_hosts" ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBNhSjuhiLxYqNBQPnwUKQJlPfs/lqHPGwMxcT5D9saXXZ6gb75f22Yn1ClRmktzh29vOziEMCMgm3iOiQ/UOdak="
-# 		echo $known_hosts >> $containerconf_known_hosts
+# 		echo $known_hosts >> $container_known_hosts
 # 	done
 # }
 
