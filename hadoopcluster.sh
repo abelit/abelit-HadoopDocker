@@ -32,7 +32,7 @@ param=$1
 
 # Define hadoop and its conf's path on local
 hadoop_path="$local_path/hadoop"
-hadoop_hdfs_path="$hadoop_path/data/hdfs"
+hadoop_hdfs_path="$local_path/data/hdfs"
 hadoop_conf_path="$hadoop_path/etc/hadoop"
 hadoop_conf_slaves="$hadoop_conf_path/slaves"
 hadoop_conf_coresite="$hadoop_conf_path/core-site.xml"

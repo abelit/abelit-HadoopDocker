@@ -2,4 +2,4 @@
 /packages/*
 !/packages/*.md
 */.DS_Store
-/server/hosts
+/server/etc/hosts
