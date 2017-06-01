@@ -1,5 +1,4 @@
-/data
-/packages
+/data/hdfs/*
+/packages/*
 */.DS_Store
-/containerconf/hosts
-/containerconf/known_hosts
+/server/hosts
