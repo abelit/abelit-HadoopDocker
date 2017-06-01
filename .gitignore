@@ -1,4 +1,5 @@
 /data/hdfs/*
 /packages/*
+!/packages/*.md
 */.DS_Store
 /server/hosts
