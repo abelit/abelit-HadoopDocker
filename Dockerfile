@@ -25,38 +25,39 @@ RUN sed -i '/StrictHostKeyChecking/s/#//g' /etc/ssh/ssh_config \
     && echo "UsePAM no" >> /etc/ssh/sshd_config
 
 RUN mkdir -p /root/bigdata
+
 ENV JAVA_VERSION=1.8.0_112
 ENV HADOOP_VERSION=2.7.3
 ENV SPARK_VERSION=2.0.2
 
 # Install Java
 ADD ./packages/jdk-8u112-linux-x64.tar.gz /root/bigdata/
-RUN mv /root/bigdata/jdk1.8.0_112 /root/bigdata/jdk
+RUN ln -s /root/bigdata/jdk1.8.0_112 /root/bigdata/jdk
 
 # Install Hadoop
 ADD ./packages/hadoop-2.7.3.tar.gz /root/bigdata/
-RUN mv /root/bigdata/hadoop-2.7.3 /root/bigdata/hadoop
+RUN ln -s /root/bigdata/hadoop-2.7.3 /root/bigdata/hadoop
 
 # Install Spark
 # ADD ./packages/spark-2.0.2-bin-hadoop2.7.tgz /root/bigdata/ \
-#    && mv /root/bigdata/spark-2.0.2-bin-hadoop2.7 /root/bigdata/spark
+#    && ln -s /root/bigdata/spark-2.0.2-bin-hadoop2.7 /root/bigdata/spark
 
 # Java Environment
-ENV JAVA_HOME=/root/bigdata/jdk
-ENV JRE_HOME=${JAVA_HOME}/jre
-ENV CLASSPARH=$CLASSPATH:${JAVA_HOME}/lib:${JRE_HOME}/lib
-ENV PATH=$PATH:${JAVA_HOME}/bin:${JRE_HOME}/bin
+# ENV JAVA_HOME=/root/bigdata/jdk
+# ENV JRE_HOME=${JAVA_HOME}/jre
+# ENV CLASSPARH=$CLASSPATH:${JAVA_HOME}/lib:${JRE_HOME}/lib
+# ENV PATH=$PATH:${JAVA_HOME}/bin:${JRE_HOME}/bin
 
 # Hadoop Environment
-ENV HADOOP_HOME=/root/bigdata/hadoop
-ENV HADOOP_MAPRED_HOME=${HADOOP_HOME}/share/hadoop/mapreduce
-ENV HADOOP_COMMON_HOME=${HADOOP_HOME}/share/hadoop/common
-ENV HADOOP_HDFS_HOME=${HADOOP_HOME}/share/hadoop/hdfs
-ENV HADOOP_YARN_HOME=${HADOOP_HOME}/share/hadoop/yarn
-ENV HADOOP_CONF_DIR=${HADOOP_HOME}/etc/hadoop
-ENV HDFS_CONF_DIR=${HADOOP_HOME}/etc/hadoop
-ENV YARN_CONF_DIR=${HADOOP_HOME}/etc/hadoop
-ENV PATH=$PATH:${HADOOP_HOME}/bin:${HADOOP_HOME}/sbin
+# ENV HADOOP_HOME=/root/bigdata/hadoop
+# ENV HADOOP_MAPRED_HOME=${HADOOP_HOME}/share/hadoop/mapreduce
+# ENV HADOOP_COMMON_HOME=${HADOOP_HOME}/share/hadoop/common
+# ENV HADOOP_HDFS_HOME=${HADOOP_HOME}/share/hadoop/hdfs
+# ENV HADOOP_YARN_HOME=${HADOOP_HOME}/share/hadoop/yarn
+# ENV HADOOP_CONF_DIR=${HADOOP_HOME}/etc/hadoop
+# ENV HDFS_CONF_DIR=${HADOOP_HOME}/etc/hadoop
+# ENV YARN_CONF_DIR=${HADOOP_HOME}/etc/hadoop
+# ENV PATH=$PATH:${HADOOP_HOME}/bin:${HADOOP_HOME}/sbin
 
 WORKDIR /root/bigdata
 

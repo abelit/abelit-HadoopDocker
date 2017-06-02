@@ -22,7 +22,7 @@ osname=`uname -s`
 local_path=`pwd`
 
 # Define docker image name or tag
-hadoop_image="ubuntu:test"
+hadoop_image="ubuntu:hadoop"
 
 # Define datanode or slaves node numbers
 node_num=3
