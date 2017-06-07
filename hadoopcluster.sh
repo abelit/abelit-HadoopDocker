@@ -129,7 +129,7 @@ function startDocker() {
 function startMaster() {
 	master_container='master'
 	#Start a master hadoop container
-	docker run -t -d --name master -h master -v $server_conf_bashrc:$container_server_conf_bashrc -v $server_conf_hosts:$container_server_conf_hosts -v $hadoop_conf_path:$container_hadoop_conf_path -v $hadoop_hdfs_path/$master_container:$container_hadoop_hdfs_path $hadoop_image
+	docker run -t -d --name master -p 50070:50070 -h master -v $server_conf_bashrc:$container_server_conf_bashrc -v $server_conf_hosts:$container_server_conf_hosts -v $hadoop_conf_path:$container_hadoop_conf_path -v $hadoop_hdfs_path/$master_container:$container_hadoop_hdfs_path $hadoop_image
 	master_ip=$(docker inspect --format='{{.NetworkSettings.IPAddress}}' $master_container)
 
 	echo ""
